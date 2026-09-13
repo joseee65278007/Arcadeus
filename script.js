@@ -58,7 +58,7 @@ const GAMES = [
     id: "snake",
     name: "Snake",
     cat: "arcade",
-    url: "games/snake.html",
+    url: "snake.html",
     emoji: "🐍",
     from: "#00e0b8",
     to: "#04524a"
@@ -67,7 +67,7 @@ const GAMES = [
     id: "tictactoe",
     name: "Tic-Tac-Toe",
     cat: "strategy",
-    url: "games/tictactoe.html",
+    url: "tictactoe.html",
     emoji: "⭕",
     from: "#ff5c7a",
     to: "#7a1f34"
@@ -76,7 +76,7 @@ const GAMES = [
     id: "memory",
     name: "Memory Match",
     cat: "puzzle",
-    url: "games/memory.html",
+    url: "memory.html",
     emoji: "🃏",
     from: "#5c8bff",
     to: "#1f3b7a"
@@ -85,7 +85,7 @@ const GAMES = [
     id: "dodge",
     name: "Meteor Dodge",
     cat: "action",
-    url: "games/dodge.html",
+    url: "dodge.html",
     emoji: "☄️",
     from: "#ff8a3d",
     to: "#7a2f04"
