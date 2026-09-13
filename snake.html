@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake</title>
+<style>
+  html,body{margin:0;height:100%;background:#0c0e14;color:#eef0f6;font-family:system-ui,sans-serif;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+  canvas{background:#171a26;border:2px solid #262b3d;border-radius:10px}
+  #hud{display:flex;gap:20px;font-size:0.95rem;color:#8b90a8}
+  #hud b{color:#00e0b8}
+  #msg{font-size:0.85rem;color:#8b90a8}
+  #overlay{position:absolute;display:none;flex-direction:column;align-items:center;gap:10px;
+    background:rgba(12,14,20,0.85);padding:24px 32px;border-radius:12px;border:1px solid #262b3d}
+  #overlay.show{display:flex}
+  button{background:#7c5cff;border:none;color:#fff;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:0.9rem}
+</style>
+</head>
+<body>
+  <div id="hud">Score: <b id="score">0</b> &nbsp; Best: <b id="best">0</b></div>
+  <div style="position:relative">
+    <canvas id="c" width="360" height="360"></canvas>
+    <div id="overlay">
+      <div id="overlayText">Game Over</div>
+      <button id="restart">Play Again</button>
+    </div>
+  </div>
+  <div id="msg">Arrow keys or swipe to move</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const cell = 20;
+const cols = canvas.width / cell;
+const rows = canvas.height / cell;
+let snake, dir, nextDir, food, score, best = +localStorage.getItem('snakeBest') || 0, loopId, running;
+
+document.getElementById('best').textContent = best;
+
+function reset() {
+  snake = [{x: 8, y: 8}];
+  dir = {x: 1, y: 0};
+  nextDir = dir;
+  score = 0;
+  document.getElementById('score').textContent = score;
+  placeFood();
+  document.getElementById('overlay').classList.remove('show');
+  running = true;
+  clearInterval(loopId);
+  loopId = setInterval(tick, 110);
+}
+
+function placeFood() {
+  do {
+    food = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+  } while (snake.some(s => s.x === food.x && s.y === food.y));
+}
+
+function tick() {
+  dir = nextDir;
+  const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+  if (head.x < 0 || head.y < 0 || head.x >= cols || head.y >= rows || snake.some(s => s.x === head.x && s.y === head.y)) {
+    return gameOver();
+  }
+
+  snake.unshift(head);
+  if (head.x === food.x && head.y === food.y) {
+    score++;
+    document.getElementById('score').textContent = score;
+    placeFood();
+  } else {
+    snake.pop();
+  }
+  draw();
+}
+
+function gameOver() {
+  running = false;
+  clearInterval(loopId);
+  if (score > best) {
+    best = score;
+    localStorage.setItem('snakeBest', best);
+  }
+  document.getElementById('best').textContent = best;
+  document.getElementById('overlayText').textContent = `Game Over — Score ${score}`;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function draw() {
+  ctx.fillStyle = '#171a26';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#ff5c7a';
+  ctx.fillRect(food.x * cell + 2, food.y * cell + 2, cell - 4, cell - 4);
+
+  snake.forEach((s, i) => {
+    ctx.fillStyle = i === 0 ? '#00e0b8' : '#7c5cff';
+    ctx.fillRect(s.x * cell + 1, s.y * cell + 1, cell - 2, cell - 2);
+  });
+}
+
+const keyMap = {
+  ArrowUp: { x: 0, y: -1 }, ArrowDown: { x: 0, y: 1 },
+  ArrowLeft: { x: -1, y: 0 }, ArrowRight: { x: 1, y: 0 },
+  w: { x: 0, y: -1 }, s: { x: 0, y: 1 }, a: { x: -1, y: 0 }, d: { x: 1, y: 0 }
+};
+
+document.addEventListener('keydown', e => {
+  const d = keyMap[e.key];
+  if (!d || !running) return;
+  if (d.x === -dir.x && d.y === -dir.y) return; // no 180 turns
+  nextDir = d;
+});
+
+let touchStart = null;
+canvas.addEventListener('touchstart', e => { touchStart = e.touches[0]; });
+canvas.addEventListener('touchend', e => {
+  if (!touchStart || !running) return;
+  const dx = e.changedTouches[0].clientX - touchStart.clientX;
+  const dy = e.changedTouches[0].clientY - touchStart.clientY;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    nextDir = dx > 0 ? { x: 1, y: 0 } : { x: -1, y: 0 };
+  } else {
+    nextDir = dy > 0 ? { x: 0, y: 1 } : { x: 0, y: -1 };
+  }
+});
+
+document.getElementById('restart').addEventListener('click', reset);
+reset();
+</script>
+</body>
+</html>

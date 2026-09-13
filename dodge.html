@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meteor Dodge</title>
+<style>
+  html,body{margin:0;height:100%;background:#0c0e14;color:#eef0f6;font-family:system-ui,sans-serif;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;overflow:hidden}
+  #hud{display:flex;gap:20px;font-size:0.95rem;color:#8b90a8}
+  #hud b{color:#00e0b8}
+  canvas{background:#0f1119;border:2px solid #262b3d;border-radius:10px;touch-action:none}
+  #overlay{position:absolute;display:none;flex-direction:column;align-items:center;gap:10px;
+    background:rgba(12,14,20,0.9);padding:24px 32px;border-radius:12px;border:1px solid #262b3d}
+  #overlay.show{display:flex}
+  button{background:#7c5cff;border:none;color:#fff;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:0.9rem}
+  #msg{font-size:0.85rem;color:#8b90a8}
+</style>
+</head>
+<body>
+  <div id="hud">Time: <b id="time">0.0</b>s &nbsp; Best: <b id="best">0.0</b>s</div>
+  <div style="position:relative">
+    <canvas id="c" width="380" height="420"></canvas>
+    <div id="overlay">
+      <div id="overlayText">Crashed!</div>
+      <button id="restart">Try Again</button>
+    </div>
+  </div>
+  <div id="msg">Move mouse / drag finger to steer</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+let player, meteors, targetX, elapsed, best = +localStorage.getItem('dodgeBest') || 0, running, spawnTimer, animId, lastTime;
+
+document.getElementById('best').textContent = best.toFixed(1);
+
+function reset() {
+  player = { x: W / 2, y: H - 50, r: 14 };
+  targetX = player.x;
+  meteors = [];
+  elapsed = 0;
+  running = true;
+  spawnTimer = 0;
+  lastTime = performance.now();
+  document.getElementById('overlay').classList.remove('show');
+  cancelAnimationFrame(animId);
+  animId = requestAnimationFrame(loop);
+}
+
+function spawnMeteor() {
+  const r = 10 + Math.random() * 18;
+  meteors.push({
+    x: Math.random() * W,
+    y: -r,
+    r,
+    speed: 90 + Math.random() * 90 + elapsed * 4
+  });
+}
+
+function loop(now) {
+  const dt = Math.min((now - lastTime) / 1000, 0.05);
+  lastTime = now;
+
+  if (running) {
+    elapsed += dt;
+    document.getElementById('time').textContent = elapsed.toFixed(1);
+
+    // steer smoothly toward target
+    player.x += (targetX - player.x) * Math.min(dt * 10, 1);
+    player.x = Math.max(player.r, Math.min(W - player.r, player.x));
+
+    spawnTimer -= dt;
+    const spawnRate = Math.max(0.15, 0.55 - elapsed * 0.01);
+    if (spawnTimer <= 0) {
+      spawnMeteor();
+      spawnTimer = spawnRate;
+    }
+
+    meteors.forEach(m => m.y += m.speed * dt);
+    meteors = meteors.filter(m => m.y - m.r < H);
+
+    for (const m of meteors) {
+      const dx = m.x - player.x, dy = m.y - player.y;
+      if (Math.sqrt(dx * dx + dy * dy) < m.r + player.r - 4) {
+        return gameOver();
+      }
+    }
+  }
+
+  draw();
+  animId = requestAnimationFrame(loop);
+}
+
+function draw() {
+  ctx.fillStyle = '#0f1119';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = '#ff8a3d';
+  meteors.forEach(m => {
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = '#00e0b8';
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function gameOver() {
+  running = false;
+  if (elapsed > best) {
+    best = elapsed;
+    localStorage.setItem('dodgeBest', best);
+  }
+  document.getElementById('best').textContent = best.toFixed(1);
+  document.getElementById('overlayText').textContent = `Crashed at ${elapsed.toFixed(1)}s`;
+  document.getElementById('overlay').classList.add('show');
+}
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  targetX = (e.clientX - rect.left) * (W / rect.width);
+});
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  targetX = (e.touches[0].clientX - rect.left) * (W / rect.width);
+}, { passive: false });
+
+document.getElementById('restart').addEventListener('click', reset);
+reset();
+</script>
+</body>
+</html>

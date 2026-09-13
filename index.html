@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arcadeus — Play Free Browser Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<header class="site-header">
+  <div class="brand">
+    <span class="brand-mark">▲</span>
+    <span class="brand-name">Arcadeus</span>
+  </div>
+
+  <div class="search-wrap">
+    <input id="searchInput" type="text" placeholder="Search games..." autocomplete="off">
+    <span class="search-icon">⌕</span>
+  </div>
+
+  <nav class="category-nav" id="categoryNav">
+    <button class="chip active" data-cat="all">All</button>
+    <button class="chip" data-cat="arcade">Arcade</button>
+    <button class="chip" data-cat="puzzle">Puzzle</button>
+    <button class="chip" data-cat="action">Action</button>
+    <button class="chip" data-cat="runner">Runner</button>
+    <button class="chip" data-cat="strategy">Strategy</button>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>Games load in one click.<br><span class="hero-accent">No installs, no waiting.</span></h1>
+    <p class="hero-sub">A hand-picked library of free browser games — pick a tile and start playing.</p>
+  </section>
+
+  <section id="resultsInfo" class="results-info" hidden></section>
+
+  <section class="game-grid" id="gameGrid"></section>
+
+  <p class="empty-state" id="emptyState" hidden>No games match your search. Try a different name or category.</p>
+</main>
+
+<footer class="site-footer">
+  <p>Built with Arcadeus — a static, GitHub-Pages-ready game hub. Add your own games in <code>script.js</code>.</p>
+</footer>
+
+<!-- Play Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-top">
+      <div class="modal-title">
+        <img id="modalThumb" src="" alt="" class="modal-thumb">
+        <div>
+          <h2 id="modalGameName"></h2>
+          <span id="modalGameCat" class="modal-cat"></span>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="fullscreenBtn" class="icon-btn" title="Fullscreen">⛶</button>
+        <button id="closeModalBtn" class="icon-btn" title="Close">✕</button>
+      </div>
+    </div>
+    <div class="modal-frame-wrap" id="frameWrap">
+      <div class="frame-loading" id="frameLoading">
+        <img id="frameLoadingThumb" src="" alt="">
+        <span>Loading game…</span>
+      </div>
+      <iframe id="gameFrame" title="Game window" allow="fullscreen; gamepad; autoplay" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
