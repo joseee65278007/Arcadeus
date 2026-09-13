@@ -106,7 +106,7 @@ function makeThumb(game) {
       <rect width="400" height="300" fill="url(#g)"/>
       <text x="50%" y="54%" font-size="120" text-anchor="middle" dominant-baseline="middle">${game.emoji}</text>
     </svg>`;
-  return "data:image/svg+xml;base64," + btoa(svg);
+    return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
 }
 
 /* ---------- rendering ---------- */
